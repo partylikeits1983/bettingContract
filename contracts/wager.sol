@@ -7,14 +7,14 @@ contract A {
 struct wager { 
 
     address creator;
-
     uint ID;
-
     bool result;
+
+    uint yesBalance;
+    uint noBalance;
 
     address[] yes;
     address[] no;
-
     uint balance;
 
 }
@@ -24,31 +24,30 @@ struct YES {
 
     address creator;
     uint ID;
-
     uint balance;
 
 }
+
 
 struct NO {
 
     address creator;
     uint ID;
-
     uint balance;
 
 }
 
 
 
-
 mapping(address => mapping(uint => wager)) public wagers;
-
 mapping(address => YES) public yes;
 mapping(address => NO) public no;
 
-
 uint private ID;
 mapping(address => uint[]) public listmappingUser;
+
+
+
 
 
 function createWager() public {
@@ -68,11 +67,13 @@ function createWager() public {
 function deposit(address user, uint id, bool result) payable public {
 
     if (result == true) {
+        
         yes[msg.sender].balance += msg.value;
         
     }
 
     else {
+
         no[msg.sender].balance += msg.value;
     }
 
@@ -88,7 +89,15 @@ function withdraw(address user, uint id) public {
 
         require(yes[msg.sender].balance > 0);
 
-        payable(msg.sender).transfer(address(this).balance);
+        /* split according to percentage of deposit
+
+        // this function is currently failing but this is the idea.. 
+
+        */
+
+        uint payment = (wagers[user][id].balance * yes[msg.sender].balance) / wagers[user][id].yesBalance;
+
+        payable(msg.sender).transfer(payment);
 
     }
 
@@ -98,9 +107,14 @@ function withdraw(address user, uint id) public {
 
         //payable(msg.sender).transfer(address(this).balance);
 
+        uint payment = (wagers[user][id].balance * no[msg.sender].balance) / wagers[user][id].noBalance;
+
+        payable(msg.sender).transfer(payment);
+
     }
 
 }
+
 
 
 
