@@ -38,16 +38,12 @@ struct NO {
 }
 
 
-
 mapping(address => mapping(uint => wager)) public wagers;
 mapping(address => YES) public yes;
 mapping(address => NO) public no;
 
 uint private ID;
 mapping(address => uint[]) public listmappingUser;
-
-
-
 
 
 function createWager() public {
@@ -63,19 +59,25 @@ function createWager() public {
 }
 
 
-
 function deposit(address user, uint id, bool result) payable public {
 
     if (result == true) {
         
         yes[msg.sender].balance += msg.value;
+
+        wagers[user][id].yesBalance += msg.value;
+
         
     }
 
     else {
 
         no[msg.sender].balance += msg.value;
+    
+        wagers[user][id].noBalance += msg.value;
+
     }
+
 
     wagers[user][id].balance += msg.value;
 
@@ -95,7 +97,8 @@ function withdraw(address user, uint id) public {
 
         */
 
-        uint payment = (wagers[user][id].balance * yes[msg.sender].balance) / wagers[user][id].yesBalance;
+
+        uint payment = (yes[msg.sender].balance * wagers[user][id].yesBalance) / wagers[user][id].balance;
 
         payable(msg.sender).transfer(payment);
 
@@ -106,17 +109,14 @@ function withdraw(address user, uint id) public {
         require(no[msg.sender].balance > 0);
 
         //payable(msg.sender).transfer(address(this).balance);
-
-        uint payment = (wagers[user][id].balance * no[msg.sender].balance) / wagers[user][id].noBalance;
+ 
+        uint payment = (yes[msg.sender].balance * wagers[user][id].yesBalance) / wagers[user][id].balance;
 
         payable(msg.sender).transfer(payment);
 
     }
 
 }
-
-
-
 
 
 // dev tools
@@ -126,8 +126,6 @@ function withdraw(address user, uint id) public {
 
     }
 
-  
-    
     
     function array() public view virtual returns (uint) {
         return yes[msg.sender].balance;
@@ -136,7 +134,6 @@ function withdraw(address user, uint id) public {
     function getBankBalance() public view returns(uint){
         return address(this).balance;
     }
-
 
 }
 
